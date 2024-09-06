@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        background-image: url("./weather.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+      .header {
+        color: #141212;
+        padding: 20px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 3.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .weather-select {
+        text-align: center;
+        padding: 20px;
+      }
+      .weather-select select {
+        padding: 10px;
+        font-size: 1em;
+      }
+      .weather-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        padding: 20px;
+      }
+      .weather-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        padding: 20px;
+        width: 250px;
+        text-align: center;
+        background-color: rgba(178, 235, 228, 0.5);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      }
+      .weather-card h2 {
+        margin: 0;
+        font-size: 1.5em;
+        color: #333;
+      }
+      .weather-card p {
+        margin: 5px 0;
+      }
+      .weather-card .description {
+        font-style: italic;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Weather App</h1>
+    </div>
+    <div class="weather-select">
+      <label for="city-select">Vyberte město:</label>
+      <select id="city-select">
+        <option value="">Všechny</option>
+        <option value="Ostrava">Ostrava</option>
+        <option value="Helsinki">Helsinki</option>
+        <option value="Sydney">Sydney</option>
+        <option value="Ottawa">Ottawa</option>
+        <option value="Cardiff">Cardiff</option>
+        <option value="Hradec Kralove">Hradec Kralové</option>
+      </select>
+    </div>
+    <div class="weather-container" id="weather-container"></div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const citySelect = document.getElementById("city-select");
+        const weatherContainer = document.getElementById("weather-container");
+
+        function fetchWeatherData() {
+          fetch("https://springpocasi.azurewebsites.net/weather")
+            .then((response) => response.json())
+            .then((data) => {
+              renderWeatherCards(data);
+            })
+            .catch((error) =>
+              console.error("Chyba při načítání dat o počasí:", error)
+            );
+        }
+
+        function renderWeatherCards(data) {
+          weatherContainer.innerHTML = "";
+          const selectedCity = citySelect.value;
+          const filteredData = selectedCity
+            ? data.filter((item) => item.location === selectedCity)
+            : data;
+
+          if (filteredData.length === 0) {
+            weatherContainer.innerHTML = "<p>Žádná data k zobrazení.</p>";
+          }
+
+          filteredData.forEach((item) => {
+            const card = document.createElement("div");
+            card.className = "weather-card";
+            card.innerHTML = `
+                        <h2>${item.location}</h2>
+                        <p>Teplota: ${item.temp_celsius}°C</p>
+                        <p>Vlhkost: ${item.relative_humidity}%</p>
+                        <p>Vítr: ${item.wind_speed_m_per_s.toFixed(2)} m/s, ${
+              item.wind_direction
+            }</p>
+                        <p class="description">Popis: ${
+                          item.weather_description
+                        }</p>
+                    `;
+            weatherContainer.appendChild(card);
+          });
+        }
+
+        citySelect.addEventListener("change", fetchWeatherData);
+
+        fetchWeatherData();
+      });
+    </script>
+  </body>
+</html>
